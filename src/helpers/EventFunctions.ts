@@ -1,6 +1,7 @@
 import { randomUUID } from "crypto";
-import { date, getEthiopicDay } from "./Calendar-Functions";
-import CalendarConverter from "./Calendar-Converter";
+import { v4 as uuidV4 } from 'uuid';
+import { date, getEthiopicDay } from "./CalendarFunctions";
+import CalendarConverter from "./CalendarConverter";
 
 export type EventTime = {
     day: number;
@@ -43,7 +44,7 @@ const calendarConverter = new CalendarConverter();
 
 export function createEvent(event: Event, id?: string, recurringId?: number){
     return {
-      id: id ? id : randomUUID(),
+      id: id ? id : uuidV4(),
       title: event.title,
       type: event.type,
       shortDescription: event.shortDescription,
@@ -86,7 +87,8 @@ export function createEvent(event: Event, id?: string, recurringId?: number){
     }
     let eventDayIndex: number, eventStart: Date, eventEnd: Date;
     let weekDay: number;
-    let eventId : string = id ? id : randomUUID();
+    //let eventId : string = id ? id : randomUUID();
+    let eventId = id ? id : uuidV4();
     if(event.recurringOn !==0){
       for(let i = 0, j = 1; i <= 40; ){  
         eventStart = new Date(startDateTime.getTime());

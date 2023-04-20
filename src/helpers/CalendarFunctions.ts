@@ -1,7 +1,4 @@
-import { randomUUID } from "crypto";
-import { type } from "os";
-
-  export type Day = {
+export type Day = {
     day: number;
     month: number;
     year: number;

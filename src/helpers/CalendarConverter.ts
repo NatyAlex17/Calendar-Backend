@@ -1,4 +1,4 @@
-import {date} from './Calendar-Functions';
+import {date} from './CalendarFunctions';
 /* Using Private fields for the implementation */
 
 /***
