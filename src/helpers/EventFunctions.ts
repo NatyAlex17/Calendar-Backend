@@ -49,7 +49,7 @@ export function createEvent(event: Event, id?: string, recurringId?: number){
       type: event.type,
       shortDescription: event.shortDescription,
       recurringOn: event.recurringOn,
-      recurringId: recurringId ? recurringId : event.recurringId,
+      recurringId: recurringId ? recurringId : 0,
       startDateTime: { 
         day: event.startDateTime.day,
         month: event.startDateTime.month,
@@ -73,7 +73,7 @@ export function createEvent(event: Event, id?: string, recurringId?: number){
     };
   }
 
- export function addRecurringEvents(event: Event , isGregorian : boolean , id?: string){
+ export function addRecurringEvents(event: Event, isGregorian : boolean, id?: string){
 
     let convertedDate: date;
     const startDateTime = new Date(event.startDateTime.year, event.startDateTime.month, event.startDateTime.day, event.startDateTime.hour, event.startDateTime.minute);

@@ -20,10 +20,9 @@ mongoose.connect(dbUri)
 
             console.log("mongoose connected"); 
 
-            EventModel.findOne({isPublicHoliday: true})
-                      .then(  (data) => {
-                            if(data === null)
-                            {
+            /* EventModel.findOne({isPublicHoliday: true})
+                      .then((data) => {
+                            if(data === null){
                                 try{
                                     readFile("FilteredHolidays.json", "utf-8", (err, data) => {
                                     if(err){
@@ -38,15 +37,14 @@ mongoose.connect(dbUri)
                                             });
                                     }); 
                                 
-                                    } catch(error){
-                                        console.log("Error: ", error);
-                                        return;
-                                    }
+                                } catch(error){
+                                    console.log("Error: ", error);
+                                    return;
+                                }
                             }
-
                       }).catch( (err) => {
                             console.log("Error: ", err);
-                      })
+                      }) */
 
             app.use("/api", eventRouter);
             app.set('port', process.env.PORT || 5000);
@@ -55,7 +53,7 @@ mongoose.connect(dbUri)
             })
 
       }).catch(err => {
-         console.log("An error occured: ", err);
+         console.log("An error occurred: ", err);
 })
 
 

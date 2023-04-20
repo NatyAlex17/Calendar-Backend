@@ -12,7 +12,7 @@ router.get("/events",async function (req:Request , res : Response , next : NextF
             size : events.length
         });
     } catch(error){
-        res.status(500).send("Error Occured");
+        res.status(500).send("Error occurred");
         console.log("Error occurred: ", error);
     }
     
@@ -29,7 +29,7 @@ router.post("/event", function (req: Request , res : Response , next : NextFunct
             res.status(200).json(docs);
         }).catch(err => {
             console.log(err);
-            res.status(500).send("error occured  ");
+            res.status(500).send("error occurred  ");
         });
     }
     else
@@ -40,14 +40,77 @@ router.post("/event", function (req: Request , res : Response , next : NextFunct
             res.status(200).json(doc);
         }).catch(err => {
             console.log(err);
-            res.status(500).send("error occured  ");
+            res.status(500).send("error occurred  ");
         });
     }
         
 })
 
 router.put('/event', function (req: Request, res: Response, next: NextFunction){
+    const {prevData, newData, isGregorian, editAll, startDay, endDay} = req.body;
+    const prevEventStart = new Date(prevData.startDateTime.year, prevData.startDateTime.month, prevData.startDateTime.day).getTime();
+    const prevEventEnd = new Date(prevData.endDateTime.year, prevData.endDateTime.month, prevData.endDateTime.day).getTime();
 
+    if(prevData.recurringOn !== 0 && newData.recurringOn === 0){ 
+
+        EventModel.deleteMany({id: prevData.id})
+                  .then((result) => {
+                    console.log("Data is deleted... ", result);
+                    EventModel.create(createEvent(newData, prevData.id))
+                              .then((docs) => {
+                                console.log("Event Edited.... ", docs);
+                                res.status(200).json(docs);
+                              }).catch((err) => {
+                                console.log("Error Occurred... ", err);
+                                res.status(500).send("Error Occurred, Edit Failed...");
+                              })
+
+                 }).catch((error) => {
+                    console.log("Error Occurred: ", error);
+                    res.status(500).send("Error Occurred, Delete Failed...");
+                 })
+
+    } else if((prevData.recurringOn !== newData.recurringOn) || 
+              (editAll && (prevEventStart !== (new Date(startDay.year, startDay.month, startDay.day).getTime()) ||
+                            prevEventEnd !== (new Date(endDay.year, endDay.month, endDay.day).getTime())))){
+
+        EventModel.deleteMany({id: prevData.id})
+                  .then((result) => {
+                    console.log("Event Edited... ", result);
+                    const recurringEvents = addRecurringEvents(newData, isGregorian, prevData.id);
+                    EventModel.insertMany(recurringEvents)
+                              .then((docs) => {
+                                console.log("Event edited: ", docs);
+                                res.status(200).json(docs);
+                            }).catch((err) => {
+                                console.log("Error Occurred... ", err);
+                                res.status(500).send("Error Occurred, Edit Failed...");
+                            })
+                }).catch((error) => {
+                    console.log("Error Occurred... ", error);
+                    res.status(500).send("Error Occurred, Delete Failed...");
+                })
+    } else {
+        if(prevData.recurringOn !==0 && editAll){
+            EventModel.updateMany({id: prevData.id}, createEvent(newData, prevData.id))
+                      .then((result) => {
+                        console.log("Event updated... ", result);
+                        res.status(200).send(result);
+                      }).catch((err) => {
+                        console.log("Error Occurred... ", err);
+                        res.status(500).send("Error Occurred, Update Failed... ");
+                      })
+        } else{
+            EventModel.updateOne({id: prevData.id, recurringId: prevData.recurringId}, createEvent(newData, prevData.id))
+                      .then((result) => {
+                        console.log("Event updated.... ", result);
+                        res.status(200).send(result);
+                      }).catch((err) => {
+                        console.log("Error Occurred... ", err);
+                        res.status(500).send("Error Occurred, Update Failed... ");
+                      })
+        } 
+    }
 })
 
 export {router as eventRouter}
