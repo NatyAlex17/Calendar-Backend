@@ -1,6 +1,7 @@
 import express , {  Request, Response, NextFunction} from "express";
 import EventModel  from "../models/eventModel";
 import { addRecurringEvents, createEvent } from "../helpers/EventFunctions";
+import { error } from "console";
 
 const router = express.Router();
 
@@ -113,4 +114,26 @@ router.put('/event', function (req: Request, res: Response, next: NextFunction){
     }
 })
 
+router.delete('/event', function(req: Request, res: Response, next: NextFunction){
+    const {data} = req.body;
+    if(data.recurringOn === 0 || data.deleteAll){
+        EventModel.deleteMany({id: data.id})
+                  .then((result) => {
+                    console.log("Event deleted... ", result);
+                    res.status(200).send(result);
+                  }).catch((error) => {
+                    console.log("Error Occurred... ", error);
+                    res.status(500).send("Error Occurred, Delete Failed... ");
+                  });
+    }else{
+        EventModel.deleteOne({id: data.id, recurringId: data.recurringId})
+                  .then((result) => {
+                    console.log("Event deleted.... ", result);
+                    res.status(200).send(result);
+                  }).catch((error) => {
+                    console.log("Error Occurred... ", error);
+                    res.status(500).send("Error Occurred, Delete Failed... ");
+                  });
+    }
+})
 export {router as eventRouter}
