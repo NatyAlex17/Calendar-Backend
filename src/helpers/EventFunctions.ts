@@ -80,7 +80,7 @@ export function createEvent(event: Event, id?: string, recurringId?: number){
     const startDateTime = new Date(event.startDateTime.year, event.startDateTime.month, event.startDateTime.day, event.startDateTime.hour, event.startDateTime.minute);
     const endDateTime = new Date(event.endDateTime.year, event.endDateTime.month, event.endDateTime.day, event.endDateTime.hour, event.endDateTime.minute);
     const newEvents: Event[] = [] as Event[];
-    const duration = startDateTime.getTime() - endDateTime.getTime();
+    const duration = endDateTime.getTime() - startDateTime.getTime();
     let recurrentDayIndex = Math.ceil(startDateTime.getDate() / 7);
     if(!isGregorian){
       convertedDate = calendarConverter.convertToEC(startDateTime.getFullYear(), startDateTime.getMonth() + 1, startDateTime.getDate());
