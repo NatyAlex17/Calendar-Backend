@@ -9,7 +9,7 @@ export type EventTime = {
     year: number;
     hour: number;
     minute: number; 
-}
+};
 
 export type Event = {
     id?: string;
@@ -26,9 +26,10 @@ export type Event = {
     recurringOn?: number;
     recurringId?: number; 
     isPublicHoliday?: boolean;
-  }
+};
 
-/*   export type EventReq = Event & {
+/* 
+export type EventReq = Event & {
     startDateTime: Date;
     endDateTime: Date;
    }
@@ -36,7 +37,7 @@ export type EventDB = Event & {
     startDateTime: EventTime;
     endDateTime:  EventTime;
    }
- */
+*/
 
 
 const calendarConverter = new CalendarConverter();
