@@ -1,34 +1,31 @@
-import joi from 'joi'
+import joi, { ref } from 'joi'
 import { getEthMonthDaysCount, getGregMonthDaysCount } from '../helpers/CalendarFunctions';
 
-const EventTimeSchema = joi.object({
-    startDateTime: {
-        day: joi.when('isGregorian',[{is : true , then : joi.number().max(31).min(1).custom((data, helpers) => {
-            const {day,month,year} = data;
-            const daysCount = getGregMonthDaysCount(month,year);
-            if( day > daysCount )
-                return helpers.message({custom : "day should not exceed amount per month"})
-            return (data);
-    })} , {not : true , then : joi.number().max(30).min(1).custom((data, helpers) => {
-        const {day,month,year} = data;
-        const daysCount = getEthMonthDaysCount(month,year);
-        if( day > daysCount )
-            return helpers.message({custom : "day should not exceed amount per month"})
-        return (data);
-})}]),
-        month: joi.when('isGregorian',[{is:true , then : joi.number().min(0).max(12).required(),  }]), 
-        year: joi.number().min(1).required(),
-        hour: joi.number().min(0).max(23).required(),
-        minute: joi.number().min(0).max(59).required()
-    },
-    endDateTime: {
-        day: joi.number().min(1).max(31).required(),
-        month: joi.number().min(0).max(12).required(),
-        year: joi.number().min(1).required(),
-        hour: joi.number().min(0).max(23).required(),
-        minute: joi.number().min(0).max(59).required()
-    }
+
+function dayValidator(data : any ,  helpers : joi.CustomHelpers<any> , isGregorian : boolean)
+{
+    console.log(data);
+    const {day,month,year} = data;
+    const daysCount = isGregorian ? getGregMonthDaysCount(month,year) : getEthMonthDaysCount(month,year); ;
+    if( day > daysCount )
+        return helpers.message({custom : "day should not exceed amount per month"})
+    return (data);
+
+}
+
+
+export const EventDateSchema  =  joi.object({
+    month: joi.when(ref('isGregorian'),[{is:true , then : joi.number().min(0).max(11).required(), otherwise : joi.number().min(1).max(12).required()}]), 
+    year: joi.number().min(1).required(),
+    day: joi.number().min(1).max(31).required(),
+}).when(ref('isGregorian'),[{is : true , then : joi.custom((data, helpers) => { return dayValidator(data , helpers , true)}),
+     otherwise : joi.custom((data, helpers) => {return dayValidator(data,helpers,false)})}]);
+
+export const EventTimeSchema =  EventDateSchema.append({
+    hour: joi.number().min(0).max(23).required(),
+    minute: joi.number().min(0).max(59).required()
 });
+
 
 
 const EventSchema  = joi.object({
@@ -36,20 +33,8 @@ const EventSchema  = joi.object({
     title:  joi.string().max(40).min(3).required(),
     type: joi.string().valid('event','holiday','exam').lowercase().required(),
     color: joi.string().regex(/^\#[0-9a-fA-F]{6}$/).required(),
-    startDateTime: {
-        day: joi.number().min(1).max(31).required(),
-        month: joi.number().min(0).max(12).required(),
-        year: joi.number().min(1).required(),
-        hour: joi.number().min(0).max(23).required(),
-        minute: joi.number().min(0).max(59).required()
-    },
-    endDateTime: {
-        day: joi.number().min(1).max(31).required(),
-        month: joi.number().min(0).max(12).required(),
-        year: joi.number().min(1).required(),
-        hour: joi.number().min(0).max(23).required(),
-        minute: joi.number().min(0).max(59).required()
-    },
+    startDateTime: EventTimeSchema,
+    endDateTime: EventTimeSchema,
     actionUrl: joi.string().required(),
     fromApp: joi.string().required(),
     toApp: joi.string().required(),
@@ -62,70 +47,22 @@ const EventSchema  = joi.object({
 
 export const AddEventSchema = joi.object({
     isGregorian : joi.boolean().required(),
-    data : {
-        title:  joi.string().max(40).min(3).required(),
-        type: joi.string().valid('event','holiday','exam').lowercase().required(),
-        color: joi.string().regex(/^\#[0-9a-fA-F]{6}$/).required(),
-        startDateTime: {
-            day: joi.number().min(1).max(31).required(),
-            month: joi.number().min(0).max(12).required(),
-            year: joi.number().min(1).required(),
-            hour: joi.number().min(0).max(23).required(),
-            minute: joi.number().min(0).max(59).required()
-        },
-        endDateTime: {
-            day: joi.number().min(1).max(31).required(),
-            month: joi.number().min(0).max(12).required(),
-            year: joi.number().min(1).required(),
-            hour: joi.number().min(0).max(23).required(),
-            minute: joi.number().min(0).max(59).required()
-        },
-        actionUrl: joi.string().required(),
-        fromApp: joi.string().required(),
-        toApp: joi.string().required(),
-        shortDescription: joi.string().required(),
-        image: joi.string(),
-        recurringOn: joi.number().max(4).min(0).required(),
-        recurringId: joi.number().required().min(0),
-        isPublicHoliday: joi.boolean().required(), 
-    }
-});
+    data : EventSchema.fork(['id'] , key => key.empty().optional())});
 
 export const EditEventSchema = joi.object({
     
     isGregorian : joi.boolean(),
     prevData : joi.object({
         id : joi.string().guid({version : 'uuidv4'}).required(),
-        startDateTime: {
-            day: joi.number().min(1).max(31).required(),
-            month: joi.number().min(0).max(12).required(),
-            year: joi.number().min(1).required(),
-            hour: joi.number().min(0).max(23).required(),
-            minute: joi.number().min(0).max(59).required()
-        },
-        endDateTime: {
-            day: joi.number().min(1).max(31).required(),
-            month: joi.number().min(0).max(12).required(),
-            year: joi.number().min(1).required(),
-            hour: joi.number().min(0).max(23).required(),
-            minute: joi.number().min(0).max(59).required()
-        },
+        startDateTime: EventTimeSchema,
+        endDateTime: EventTimeSchema,
         recurringOn: joi.number().max(4).min(0).required(),
         recurringId: joi.number().required().min(0),
         }),
     newData : EventSchema,
     editAll : joi.boolean().required(),
-    startDay :  {
-        day: joi.number().min(1).max(31).required(),
-        month: joi.number().min(0).max(12).required(),
-        year: joi.number().min(1).required()
-        
-    } , 
-    endDay : {
-        day: joi.number().min(1).max(31).required(),
-        month: joi.number().min(0).max(12).required(),
-        year: joi.number().min(1).required()
-    },
+    startDay :  EventDateSchema, 
+    endDay : EventDateSchema,
     
  });
 

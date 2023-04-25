@@ -27,7 +27,7 @@ mongoose.connect(dbUri)
 
             console.log("mongoose connected"); 
 
-            EventModel.findOne({isPublicHoliday: true})
+           /*  EventModel.findOne({isPublicHoliday: true})
                       .then((data) => {
                             if(data === null){
                                 try{
@@ -51,7 +51,7 @@ mongoose.connect(dbUri)
                             }
                       }).catch( (err) => {
                             console.log("Error: ", err);
-                      });
+                      }); */
 
             app.use("/api", eventRouter);
             app.set('port', process.env.PORT || 5000);

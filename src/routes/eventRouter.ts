@@ -3,9 +3,26 @@ import EventModel  from "../models/eventModel";
 import { addRecurringEvents, createEvent } from "../helpers/EventFunctions";
 import joi from 'joi';
 import { error } from "console";
-import { AddEventSchema, DeleteEventSchema, EditEventSchema } from "../validators/addEvent";
+import { AddEventSchema, DeleteEventSchema, EditEventSchema, EventDateSchema, EventTimeSchema } from "../validators/addEvent";
 
 const router = express.Router();
+
+router.post( "/eventtime", async function (req:Request , res : Response , next : NextFunction ) {
+
+    const {error , value} = AddEventSchema.validate(req.body);
+
+    if(error)
+    {
+       res.status(400).json(error);
+    }  
+    else
+    {
+        res.status(200).json(value);
+    }
+    
+
+
+});
 
 router.get("/events",async function (req:Request , res : Response , next : NextFunction ) {
     try{
