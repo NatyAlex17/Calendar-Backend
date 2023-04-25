@@ -47,7 +47,7 @@ router.post("/event", function (req: Request , res : Response , next : NextFunct
       else
       {
           const event = createEvent(data);
-          EventModel.create(event).then((doc) => {
+          EventModel.insertMany(event).then((doc) => {
               console.log(doc);
               res.status(200).json(doc);
           }).catch(err => {

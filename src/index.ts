@@ -4,10 +4,17 @@ import { eventRouter } from "./routes/eventRouter";
 import EventModel from "./models/eventModel";
 import { readFile } from "fs";
 import dotenv from 'dotenv';
+import cors from 'cors';
 
 const app = express();
 app.use(express.json());
 dotenv.config();
+const corsOption = {
+    origin: "http://localhost:3000",
+    credentials: true,
+    optionSuccessStatus: 200,
+};
+app.use(cors(corsOption));
 
 const dbUri = process.env.MONGODB_URI || '';
 
@@ -20,7 +27,7 @@ mongoose.connect(dbUri)
 
             console.log("mongoose connected"); 
 
-            /* EventModel.findOne({isPublicHoliday: true})
+            EventModel.findOne({isPublicHoliday: true})
                       .then((data) => {
                             if(data === null){
                                 try{
@@ -44,7 +51,7 @@ mongoose.connect(dbUri)
                             }
                       }).catch( (err) => {
                             console.log("Error: ", err);
-                      }) */
+                      });
 
             app.use("/api", eventRouter);
             app.set('port', process.env.PORT || 5000);

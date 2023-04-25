@@ -9,7 +9,7 @@ export type EventTime = {
     year: number;
     hour: number;
     minute: number; 
-}
+};
 
 export type Event = {
     id?: string;
@@ -26,9 +26,10 @@ export type Event = {
     recurringOn?: number;
     recurringId?: number; 
     isPublicHoliday?: boolean;
-  }
+};
 
-/*   export type EventReq = Event & {
+/* 
+export type EventReq = Event & {
     startDateTime: Date;
     endDateTime: Date;
    }
@@ -36,7 +37,7 @@ export type EventDB = Event & {
     startDateTime: EventTime;
     endDateTime:  EventTime;
    }
- */
+*/
 
 
 const calendarConverter = new CalendarConverter();
@@ -79,7 +80,7 @@ export function createEvent(event: Event, id?: string, recurringId?: number){
     const startDateTime = new Date(event.startDateTime.year, event.startDateTime.month, event.startDateTime.day, event.startDateTime.hour, event.startDateTime.minute);
     const endDateTime = new Date(event.endDateTime.year, event.endDateTime.month, event.endDateTime.day, event.endDateTime.hour, event.endDateTime.minute);
     const newEvents: Event[] = [] as Event[];
-    const duration = startDateTime.getTime() - endDateTime.getTime();
+    const duration = endDateTime.getTime() - startDateTime.getTime();
     let recurrentDayIndex = Math.ceil(startDateTime.getDate() / 7);
     if(!isGregorian){
       convertedDate = calendarConverter.convertToEC(startDateTime.getFullYear(), startDateTime.getMonth() + 1, startDateTime.getDate());
