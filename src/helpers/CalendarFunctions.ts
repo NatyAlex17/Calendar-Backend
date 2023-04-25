@@ -17,7 +17,7 @@ export type date = {
     day: number;
   };
 
-
+  export const MONTHSGREGDAYS: readonly number[] = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
 
 /* get Ethiopic month day count */
 export function getEthMonthDaysCount(month: number, year: number): number{
@@ -27,6 +27,18 @@ export function getEthMonthDaysCount(month: number, year: number): number{
         return ((year + 1) % 4 === 0 ) ? 6 : 5; //13th month has 6 days if the year is leap year     
     }
 }
+
+
+/* get Gregorian month day count */
+export function getGregMonthDaysCount(month: number, year: number): number{
+    if(month !== 1){
+         return MONTHSGREGDAYS[month]; 
+    }else{
+        return ((year % 4 === 0 && year % 100 !== 0) || year % 400 === 0) ? 29 : 28; // 2nd month has 29 days if the year is leap year
+    }
+}
+
+
 
 // get ethiopian day
 export function getEthiopicDay(month: number, year: number, currentDay: number){ 

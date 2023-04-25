@@ -1,7 +1,9 @@
 import express , {  Request, Response, NextFunction} from "express";
 import EventModel  from "../models/eventModel";
 import { addRecurringEvents, createEvent } from "../helpers/EventFunctions";
+import joi from 'joi';
 import { error } from "console";
+import { AddEventSchema, DeleteEventSchema, EditEventSchema } from "../validators/addEvent";
 
 const router = express.Router();
 
@@ -20,40 +22,58 @@ router.get("/events",async function (req:Request , res : Response , next : NextF
 });
 
 router.post("/event", function (req: Request , res : Response , next : NextFunction ) {
-    const {data , isGregorian }  = req.body;
+   
+   const {error, value}  = AddEventSchema.validate(req.body,{abortEarly : true});    
 
-    if(data.recurringOn !== 0 )
-    {
-        const recurringEvents = addRecurringEvents(data, isGregorian);
-        EventModel.insertMany(recurringEvents).then((docs) => {
-            console.log(docs);
-            res.status(200).json(docs);
-        }).catch(err => {
-            console.log(err);
-            res.status(500).send("error occurred  ");
-        });
-    }
-    else
-    {
-        const event = createEvent(data);
-        EventModel.create(event).then((doc) => {
-            console.log(doc);
-            res.status(200).json(doc);
-        }).catch(err => {
-            console.log(err);
-            res.status(500).send("error occurred  ");
-        });
-    }
-        
+   if(error)
+   {
+      res.status(400).json(error);
+   }  
+   else
+   {  
+     const {data , isGregorian }  = value;
+   
+      if(data.recurringOn !== 0 )
+      {
+          const recurringEvents = addRecurringEvents(data, isGregorian);
+          EventModel.insertMany(recurringEvents).then((docs) => {
+              console.log(docs);
+              res.status(200).json(docs);
+          }).catch(err => {
+              console.log(err);
+              res.status(500).send("error occurred  ");
+          });
+      }
+      else
+      {
+          const event = createEvent(data);
+          EventModel.create(event).then((doc) => {
+              console.log(doc);
+              res.status(200).json(doc);
+          }).catch(err => {
+              console.log(err);
+              res.status(500).send("error occurred  ");
+          });
+      }
+   }
+          
 })
 
 router.put('/event', function (req: Request, res: Response, next: NextFunction){
-    const {prevData, newData, isGregorian, editAll, startDay, endDay} = req.body;
-    const prevEventStart = new Date(prevData.startDateTime.year, prevData.startDateTime.month, prevData.startDateTime.day).getTime();
-    const prevEventEnd = new Date(prevData.endDateTime.year, prevData.endDateTime.month, prevData.endDateTime.day).getTime();
+    
+    const {error , value} = EditEventSchema.validate(req.body);
 
-    if(prevData.recurringOn !== 0 && newData.recurringOn === 0){ 
+    if(error)
+    {
+        res.status(400).json(error);
+    }
+    else
+    {
+      const {prevData, newData, isGregorian, editAll, startDay, endDay} = value;
+      const prevEventStart = new Date(prevData.startDateTime.year, prevData.startDateTime.month, prevData.startDateTime.day).getTime();
+      const prevEventEnd = new Date(prevData.endDateTime.year, prevData.endDateTime.month, prevData.endDateTime.day).getTime();
 
+      if(prevData.recurringOn !== 0 && newData.recurringOn === 0){ 
         EventModel.deleteMany({id: prevData.id})
                   .then((result) => {
                     console.log("Data is deleted... ", result);
@@ -112,28 +132,42 @@ router.put('/event', function (req: Request, res: Response, next: NextFunction){
                       })
         } 
     }
+    }
+
 })
 
 router.delete('/event', function(req: Request, res: Response, next: NextFunction){
-    const {data} = req.body;
-    if(data.recurringOn === 0 || data.deleteAll){
-        EventModel.deleteMany({id: data.id})
-                  .then((result) => {
-                    console.log("Event deleted... ", result);
-                    res.status(200).send(result);
-                  }).catch((error) => {
-                    console.log("Error Occurred... ", error);
-                    res.status(500).send("Error Occurred, Delete Failed... ");
-                  });
-    }else{
-        EventModel.deleteOne({id: data.id, recurringId: data.recurringId})
-                  .then((result) => {
-                    console.log("Event deleted.... ", result);
-                    res.status(200).send(result);
-                  }).catch((error) => {
-                    console.log("Error Occurred... ", error);
-                    res.status(500).send("Error Occurred, Delete Failed... ");
-                  });
+    const {error , value} = DeleteEventSchema.validate(req.body);
+
+    if(error)
+    {
+        res.status(400).json(error);
     }
+    else
+    {
+        const {data} = value;
+
+          if(data.recurringOn === 0 || data.deleteAll){
+            EventModel.deleteMany({id: data.id})
+                      .then((result) => {
+                        console.log("Event deleted... ", result);
+                        res.status(200).send(result);
+                      }).catch((error) => {
+                        console.log("Error Occurred... ", error);
+                        res.status(500).send("Error Occurred, Delete Failed... ");
+                      });
+        }else{
+            EventModel.deleteOne({id: data.id, recurringId: data.recurringId})
+                      .then((result) => {
+                        console.log("Event deleted.... ", result);
+                        res.status(200).send(result);
+                      }).catch((error) => {
+                        console.log("Error Occurred... ", error);
+                        res.status(500).send("Error Occurred, Delete Failed... ");
+                      });
+        }
+    }
+
+
 })
 export {router as eventRouter}
