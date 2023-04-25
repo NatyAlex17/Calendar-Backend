@@ -3,20 +3,8 @@ import { getEthMonthDaysCount, getGregMonthDaysCount } from '../helpers/Calendar
 
 const EventTimeSchema = joi.object({
     startDateTime: {
-        day: joi.when('isGregorian',[{is : true , then : joi.number().max(31).min(1).custom((data, helpers) => {
-            const {day,month,year} = data;
-            const daysCount = getGregMonthDaysCount(month,year);
-            if( day > daysCount )
-                return helpers.message({custom : "day should not exceed amount per month"})
-            return (data);
-    })} , {not : true , then : joi.number().max(30).min(1).custom((data, helpers) => {
-        const {day,month,year} = data;
-        const daysCount = getEthMonthDaysCount(month,year);
-        if( day > daysCount )
-            return helpers.message({custom : "day should not exceed amount per month"})
-        return (data);
-})}]),
-        month: joi.when('isGregorian',[{is:true , then : joi.number().min(0).max(12).required(),  }]), 
+        day: joi.number().min(1).max(31).required(),
+        month: joi.number().min(0).max(12).required(),
         year: joi.number().min(1).required(),
         hour: joi.number().min(0).max(23).required(),
         minute: joi.number().min(0).max(59).required()

@@ -23,7 +23,7 @@ export const eventTimeSchema = new Schema({
     recurringOn: Number,
     recurringId: Number,
     isPublicHoliday: Boolean
-  });
+  }, {versionKey: false}); 
 
   const EventModel = mongoose.models.Event || mongoose.model('Event', eventSchema);
   
