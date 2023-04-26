@@ -17,7 +17,7 @@ export type date = {
     day: number;
   };
 
-  export const MONTHSGREGDAYS: readonly number[] = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+export const MONTHSGREGDAYS: readonly number[] = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
 
 /* get Ethiopic month day count */
 export function getEthMonthDaysCount(month: number, year: number): number{

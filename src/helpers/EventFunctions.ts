@@ -63,14 +63,12 @@ export function createEvent(event: Event, id?: string, recurringId?: number){
         year: event.endDateTime.year,
         hour: event.endDateTime.hour,
         minute: event.endDateTime.minute},
-      fromApp: 'https://ekhool.com/',
-      toApp: 'https://ekhool.com/',
-      image: event.type  === 'holiday' ? 
-              'https://img.freepik.com/free-vector/elegant-merry-christmas-background-with-white-christmas-ornament_44538-4702.jpg':
-              'https://media.istockphoto.com/id/1316714426/vector/hand-drawn-doodle-calendar-and-clock-illustration-vector.jpg?s=612x612&w=0&k=20&c=CLKFfph4pU_vBcbs3HA3kjsidh0qtHdtEW79Ze4UGmU=',
-      color: event.type === 'holiday' ? '#c41785' : event.color,
-      actionUrl: 'https://ekhool.com/',
-      isPublicHoliday: false
+      fromApp: event.fromApp,
+      toApp: event.fromApp,
+      image: event.image,
+      color: event.color,
+      actionUrl: event.actionUrl,
+      isPublicHoliday: event.isPublicHoliday
     };
   }
 
@@ -137,32 +135,21 @@ export function createEvent(event: Event, id?: string, recurringId?: number){
     return newEvents;   
   }
 
-  export function editEvent(event: Event, id?: string){
+export function editEvent(event: Event){
     return {
-      id: id ? id : uuidV4(),
       title: event.title,
       type: event.type,
       shortDescription: event.shortDescription,
       recurringOn: event.recurringOn,
-      startDateTime: { 
-        day: event.startDateTime.day,
-        month: event.startDateTime.month,
-        year: event.startDateTime.year,
-        hour: event.startDateTime.hour,
-        minute: event.startDateTime.minute },
-      endDateTime: { 
-        day: event.endDateTime.day,
-        month: event.endDateTime.month,
-        year: event.endDateTime.year,
-        hour: event.endDateTime.hour,
-        minute: event.endDateTime.minute},
-      fromApp: 'https://ekhool.com/',
-      toApp: 'https://ekhool.com/',
-      image: event.type  === 'holiday' ? 
-              'https://img.freepik.com/free-vector/elegant-merry-christmas-background-with-white-christmas-ornament_44538-4702.jpg':
-              'https://media.istockphoto.com/id/1316714426/vector/hand-drawn-doodle-calendar-and-clock-illustration-vector.jpg?s=612x612&w=0&k=20&c=CLKFfph4pU_vBcbs3HA3kjsidh0qtHdtEW79Ze4UGmU=',
-      color: event.type === 'holiday' ? '#c41785' : event.color,
-      actionUrl: 'https://ekhool.com/',
-      isPublicHoliday: false
+      "startDateTime.hour": event.startDateTime.hour,
+      "startDateTime.minute": event.startDateTime.minute,
+      "endDateTime.hour": event.endDateTime.hour,
+      "endDateTime.minute": event.endDateTime.minute,
+      fromApp: event.fromApp,
+      toApp: event.fromApp,
+      image: event.image,
+      color: event.color,
+      actionUrl: event.actionUrl,
+      isPublicHoliday: event.isPublicHoliday
     };
   }
