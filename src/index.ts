@@ -5,6 +5,7 @@ import EventModel from "./models/eventModel";
 import { readFile } from "fs";
 import dotenv from 'dotenv';
 import cors from 'cors';
+import { Err } from "./errors/error";
 
 const app : Application  = express();
 app.use(express.json());
@@ -22,7 +23,11 @@ if(!dbUri){
     throw new Error("Please define the MONGODB_URI environment variable inside .env");
 }
 
+
+
 app.set('port', process.env.PORT || 5000);
+
+
 
 mongoose.connect(dbUri)
          .then((conn) => {
@@ -56,16 +61,23 @@ mongoose.connect(dbUri)
                       }); */
 
             app.use("/api", eventRouter);
+            app.use((error: any , req: Request, res: Response, next: Function) => {
+                console.log("error");
+                res.status(error.ErrorCode).json({
+                    ErrorDetail : error.ErrorDetail,
+                    ErrorMessage : error.ErrorMessage,
+                    ErrorType : error.ErrorType 
+                });
+            });
             app.listen(app.get('port'), () => {
                 console.log("Waiting for request....");
             })
+           
+            
 
-      }).catch(err => {
-         console.log("An error occurred: ", err);
-})
+      }).catch((err) => {
+            console.log("an Error ");
+      })
 
 
 
-app.use((error: any , request: Request, response: Response, next: Function) => {
-    response.status(500).json(error);
-});

@@ -2,7 +2,7 @@ import express , {  Request, Response, NextFunction} from "express";
 import EventModel  from "../models/eventModel";
 import { addRecurringEvents, createEvent, editEvent } from "../helpers/EventFunctions";
 import { AddEventSchema, DeleteEventSchema, EditEventSchema } from "../validators/addEvent";
-import { validationErrorHandler } from "../errors/error";
+import { Err, validationErrorHandler } from "../errors/error";
 import { MongooseError } from "mongoose";
 
 const router = express.Router();
@@ -13,7 +13,8 @@ router.post( "/eventtime", async function (req:Request , res : Response , next :
 
     if(error)
     {
-        res.status(400).json(validationErrorHandler(error));
+        //res.status(400).json(validationErrorHandler(error));
+        return next(validationErrorHandler(error));
     }  
     else
     {
@@ -32,7 +33,13 @@ router.get("/events",async function (req:Request , res : Response , next : NextF
             size : events.length
         });
     } catch(error ){
-        res.status(500).send("Error occurred");
+        //res.status(500).send("Error occurred");
+        next({
+          ErrorCode: 500,
+          ErrorDetail : error,
+          ErrorMessage : " Can't Get Saved Events From Server , Please Try Again ",
+          ErrorType : "DataBase Error"
+        });
         console.log("Error occurred: ", error);
     }
     
@@ -44,7 +51,7 @@ router.post("/event", function (req: Request , res : Response , next : NextFunct
 
    if(error)
    {
-      res.status(400).json(error);
+      next(validationErrorHandler(error));
    }  
    else
    {  
@@ -58,7 +65,12 @@ router.post("/event", function (req: Request , res : Response , next : NextFunct
               res.status(200).json(docs);
           }).catch(err => {
               console.log(err);
-              res.status(500).send("error occurred  ");
+               next({
+          ErrorCode: 500,
+          ErrorDetail : error,
+          ErrorMessage : " Can't Save Recurring Event , Please Try Again ",
+          ErrorType : "DataBase Error"
+        });
           });
       }
       else
@@ -69,7 +81,12 @@ router.post("/event", function (req: Request , res : Response , next : NextFunct
               res.status(200).json(new Array(doc));
           }).catch(err => {
               console.log(err);
-              res.status(500).send("error occurred  ");
+               next({
+          ErrorCode: 500,
+          ErrorDetail : err,
+          ErrorMessage : " Can't Save Event , Please Try Again ",
+          ErrorType : "DataBase Error"
+        });
           });
       }
    }
@@ -82,8 +99,7 @@ router.put('/event', function (req: Request, res: Response, next: NextFunction){
 
     if(error)
     {
-        console.log("Error on editing.... ", error);
-        res.status(400).json(error.message);
+      next(validationErrorHandler(error));
     }
     else
     {
@@ -101,12 +117,22 @@ router.put('/event', function (req: Request, res: Response, next: NextFunction){
                                 res.status(200).json(new Array(doc));
                               }).catch((err) => {
                                 console.log("Error Occurred... ", err);
-                                res.status(500).send("Error Occurred, Edit Failed...");
+                                next({
+                                  ErrorCode: 500,
+                                  ErrorDetail : err,
+                                  ErrorMessage : " Can't Save Changes Made On Recurring Event , Please Try Again ",
+                                  ErrorType : "DataBase Error"
+                                });
                               })
 
-                 }).catch((error) => {
+                 }).catch((err) => {
                     console.log("Error Occurred: ", error);
-                    res.status(500).send("Error Occurred, Delete Failed...");
+                    next({
+                      ErrorCode: 500,
+                      ErrorDetail : err,
+                      ErrorMessage : " Can't Save Changes Made On Recurring Event , Please Try Again ",
+                      ErrorType : "DataBase Error"
+                    });
                  })
 
     } else if((prevData.recurringOn !== newData.recurringOn) || 
@@ -123,11 +149,21 @@ router.put('/event', function (req: Request, res: Response, next: NextFunction){
                                 res.status(200).json(docs);
                             }).catch((err) => {
                                 console.log("Error Occurred... ", err);
-                                res.status(500).send("Error Occurred, Edit Failed...");
+                                next({
+                                  ErrorCode: 500,
+                                  ErrorDetail : err,
+                                  ErrorMessage : " Can't Save Changes Made On Recurring Event , Please Try Again ",
+                                  ErrorType : "DataBase Error"
+                                });
                             })
-                }).catch((error) => {
+                }).catch((err) => {
                     console.log("Error Occurred... ", error);
-                    res.status(500).send("Error Occurred, Delete Failed...");
+                    next({
+                      ErrorCode: 500,
+                      ErrorDetail : err,
+                      ErrorMessage : " Can't Save Changes Made On Recurring Event , Please Try Again ",
+                      ErrorType : "DataBase Error"
+                    });
                 })
     } else {
         if(prevData.recurringOn !==0 && editAll){
@@ -138,14 +174,24 @@ router.put('/event', function (req: Request, res: Response, next: NextFunction){
                                   .then((docs) => {
                                     console.log("Event list... ");
                                     res.status(200).json(docs);
-                                  }).catch((error) => {
+                                  }).catch((err) => {
                                     console.log("Error occurred..... ", error);
-                                    res.status(500).send("Error occurred, unable to retrieve updated documents... ");
+                                    next({
+                                      ErrorCode: 500,
+                                      ErrorDetail : err,
+                                      ErrorMessage : " Can't Save Changes Made On Recurring Event , Please Try Again ",
+                                      ErrorType : "DataBase Error"
+                                    }); 
                                   })
                         //res.status(200).send(result);
                       }).catch((err) => {
                         console.log("Error Occurred... ", err);
-                        res.status(500).send("Error Occurred, Update Failed... ");
+                        next({
+                          ErrorCode: 500,
+                          ErrorDetail : err,
+                          ErrorMessage : " Can't Save Changes Made On Recurring Event , Please Try Again ",
+                          ErrorType : "DataBase Error"
+                        });
                       })
             
         } else{
@@ -163,7 +209,12 @@ router.put('/event', function (req: Request, res: Response, next: NextFunction){
                         res.status(200).send(new Array(doc));
                       }).catch((err) => {
                         console.log("Error Occurred... ", err);
-                        res.status(500).send("Error Occurred, Update Failed... ");
+                        next({
+                          ErrorCode: 500,
+                          ErrorDetail : err,
+                          ErrorMessage : " Can't Save Changes Made On Recurring Event , Please Try Again ",
+                          ErrorType : "DataBase Error"
+                        });
                       })
         } 
     }
@@ -176,7 +227,9 @@ router.delete('/event', function(req: Request, res: Response, next: NextFunction
 
     if(error)
     {
-        res.status(400).json(error);
+      const err: Err = validationErrorHandler(error);
+      console.log("the error is " ,err); 
+      next(err);
     }
     else
     {
@@ -187,22 +240,31 @@ router.delete('/event', function(req: Request, res: Response, next: NextFunction
                       .then((result) => {
                         console.log("Event deleted... ", result);
                         res.status(200).send(result);
-                      }).catch((error) => {
+                      }).catch((err) => {
                         console.log("Error Occurred... ", error);
-                        res.status(500).send("Error Occurred, Delete Failed... ");
+                        next({
+                          ErrorCode: 500,
+                          ErrorDetail : err,
+                          ErrorMessage : " Can't Delete Events , Please Try Again ",
+                          ErrorType : "DataBase Error"
+                        });
                       });
         }else{
             EventModel.deleteOne({id: data.id, recurringId: data.recurringId})
                       .then((result) => {
                         console.log("Event deleted.... ", result);
                         res.status(200).send(result);
-                      }).catch((error) => {
+                      }).catch((err) => {
                         console.log("Error Occurred... ", error);
-                        res.status(500).send("Error Occurred, Delete Failed... ");
+                        next({
+                          ErrorCode: 500,
+                          ErrorDetail : err,
+                          ErrorMessage : " Can't Delete  Event , Please Try Again ",
+                          ErrorType : "DataBase Error"
+                        });
                       });
         }
     }
-
 
 })
 
