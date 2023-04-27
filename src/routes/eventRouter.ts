@@ -4,6 +4,8 @@ import { addRecurringEvents, createEvent, editEvent } from "../helpers/EventFunc
 import joi from 'joi';
 import { error } from "console";
 import { AddEventSchema, DeleteEventSchema, EditEventSchema, EventDateSchema, EventTimeSchema } from "../validators/addEvent";
+import { validationErrorHandler } from "../errors/error";
+import { MongooseError } from "mongoose";
 
 const router = express.Router();
 
@@ -13,7 +15,7 @@ router.post( "/eventtime", async function (req:Request , res : Response , next :
 
     if(error)
     {
-       res.status(400).json(error);
+        res.status(400).json(validationErrorHandler(error));
     }  
     else
     {
@@ -31,7 +33,7 @@ router.get("/events",async function (req:Request , res : Response , next : NextF
             eventData : events,
             size : events.length
         });
-    } catch(error){
+    } catch(error ){
         res.status(500).send("Error occurred");
         console.log("Error occurred: ", error);
     }

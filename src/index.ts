@@ -1,4 +1,4 @@
-import express from "express";
+import express, { Application , Request , Response , NextFunction } from "express";
 import mongoose from "mongoose";
 import { eventRouter } from "./routes/eventRouter";
 import EventModel from "./models/eventModel";
@@ -6,11 +6,11 @@ import { readFile } from "fs";
 import dotenv from 'dotenv';
 import cors from 'cors';
 
-const app = express();
+const app : Application  = express();
 app.use(express.json());
 dotenv.config();
 const corsOption = {
-    origin: "http://localhost:3000",
+    origin: "http://localhost:5000",
     credentials: true,
     optionSuccessStatus: 200,
 };
@@ -64,3 +64,7 @@ mongoose.connect(dbUri)
 })
 
 
+
+app.use((error: any , request: Request, response: Response, next: Function) => {
+    response.status(500).json(error);
+});
