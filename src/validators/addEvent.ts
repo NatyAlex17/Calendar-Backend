@@ -29,7 +29,7 @@ export const EventTimeSchema =  EventDateSchema.append({
 
 
 const EventSchema  = joi.object({
-    id : joi.string().guid({version : 'uuidv4'}).required(),
+    //id : joi.string().guid({version : 'uuidv4'}).required(),
     title:  joi.string().max(40).min(3).required(),
     type: joi.string().valid('event','holiday','exam').lowercase().required(),
     color: joi.string().regex(/^\#[0-9a-fA-F]{6}$/).required(),
@@ -41,13 +41,15 @@ const EventSchema  = joi.object({
     shortDescription: joi.string().required(),
     image: joi.string(),
     recurringOn: joi.number().max(4).min(0).required(),
-    recurringId: joi.number().required().min(0),
+    //recurringId: joi.number().required().min(0),
     isPublicHoliday: joi.boolean().required(), 
 });
 
 export const AddEventSchema = joi.object({
     isGregorian : joi.boolean().required(),
-    data : EventSchema.fork(['id'] , key => key.empty().optional())});
+    //data : EventSchema.fork(['id'] , key => key.empty().optional()),
+    data: EventSchema
+});
 
 export const EditEventSchema = joi.object({
     

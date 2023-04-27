@@ -10,7 +10,7 @@ const app : Application  = express();
 app.use(express.json());
 dotenv.config();
 const corsOption = {
-    origin: "http://localhost:5000",
+    origin: "http://localhost:3001",
     credentials: true,
     optionSuccessStatus: 200,
 };
@@ -21,6 +21,8 @@ const dbUri = process.env.MONGODB_URI || '';
 if(!dbUri){
     throw new Error("Please define the MONGODB_URI environment variable inside .env");
 }
+
+app.set('port', process.env.PORT || 5000);
 
 mongoose.connect(dbUri)
          .then((conn) => {
@@ -54,7 +56,6 @@ mongoose.connect(dbUri)
                       }); */
 
             app.use("/api", eventRouter);
-            app.set('port', process.env.PORT || 5000);
             app.listen(app.get('port'), () => {
                 console.log("Waiting for request....");
             })

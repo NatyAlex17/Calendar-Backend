@@ -1,9 +1,7 @@
 import express , {  Request, Response, NextFunction} from "express";
 import EventModel  from "../models/eventModel";
 import { addRecurringEvents, createEvent, editEvent } from "../helpers/EventFunctions";
-import joi from 'joi';
-import { error } from "console";
-import { AddEventSchema, DeleteEventSchema, EditEventSchema, EventDateSchema, EventTimeSchema } from "../validators/addEvent";
+import { AddEventSchema, DeleteEventSchema, EditEventSchema } from "../validators/addEvent";
 import { validationErrorHandler } from "../errors/error";
 import { MongooseError } from "mongoose";
 
@@ -90,8 +88,6 @@ router.put('/event', function (req: Request, res: Response, next: NextFunction){
     else
     {
       const {prevData, newData, isGregorian, editAll, startDay, endDay} = value;
-      console.log("previous data: ", prevData);
-      console.log("new data: ", newData);
       const prevEventStart = new Date(prevData.startDateTime.year, prevData.startDateTime.month, prevData.startDateTime.day).getTime();
       const prevEventEnd = new Date(prevData.endDateTime.year, prevData.endDateTime.month, prevData.endDateTime.day).getTime();
 
@@ -135,19 +131,36 @@ router.put('/event', function (req: Request, res: Response, next: NextFunction){
                 })
     } else {
         if(prevData.recurringOn !==0 && editAll){
-            EventModel.updateMany({id: prevData.id}, editEvent(newData, prevData.id))
+            EventModel.updateMany({id: prevData.id}, editEvent(newData))
                       .then((result) => {
                         console.log("Event updated... ", result);
-                        res.status(200).send(result);
+                        EventModel.find({id: prevData.id})
+                                  .then((docs) => {
+                                    console.log("Event list... ");
+                                    res.status(200).json(docs);
+                                  }).catch((error) => {
+                                    console.log("Error occurred..... ", error);
+                                    res.status(500).send("Error occurred, unable to retrieve updated documents... ");
+                                  })
+                        //res.status(200).send(result);
                       }).catch((err) => {
                         console.log("Error Occurred... ", err);
                         res.status(500).send("Error Occurred, Update Failed... ");
                       })
+            
         } else{
-            EventModel.updateOne({id: prevData.id, recurringId: prevData.recurringId}, editEvent(newData, prevData.id))
+            /* EventModel.updateOne({id: prevData.id, recurringId: prevData.recurringId}, editEvent(newData, prevData.id))
                       .then((result) => {
                         console.log("Event updated.... ", result);
                         res.status(200).send(result);
+                      }).catch((err) => {
+                        console.log("Error Occurred... ", err);
+                        res.status(500).send("Error Occurred, Update Failed... ");
+                      }) */
+            EventModel.findOneAndUpdate({id: prevData.id, recurringId: prevData.recurringId}, createEvent(newData, prevData.id, prevData.recurringId), {new: true})
+                      .then((doc) => {
+                        console.log("Event updated.... ", doc);
+                        res.status(200).send(new Array(doc));
                       }).catch((err) => {
                         console.log("Error Occurred... ", err);
                         res.status(500).send("Error Occurred, Update Failed... ");
