@@ -3,7 +3,6 @@ import EventModel  from "../models/eventModel";
 import { addRecurringEvents, createEvent, editEvent } from "../helpers/EventFunctions";
 import { AddEventSchema, DeleteEventSchema, EditEventSchema } from "../validators/addEvent";
 import { Err, validationErrorHandler } from "../errors/error";
-import { MongooseError } from "mongoose";
 
 const router = express.Router();
 
@@ -27,11 +26,32 @@ router.post( "/eventtime", async function (req:Request , res : Response , next :
 
 router.get("/events",async function (req:Request , res : Response , next : NextFunction ) {
     try{
-        const events = await EventModel.find();
-        res.status(200).json({
-            eventData : events,
-            size : events.length
-        });
+        if(req.body.year){
+          const year = +(req.body.year);
+          if(typeof year !== 'number' || year < 1){
+            next({
+              ErrorCode: 400,
+              ErrorDetail: `Please send the correct input`,
+              ErrorMessage: "Please use the correct input",
+              ErrorType: "Input Error"
+            })
+            console.log("Input error: ", req.body);
+          } else{
+            const minYear = (year - 1) <= 1 ? 1 : (year - 1);
+            const data = await EventModel.find({"startDateTime.year": {$gte: minYear, $lte: (year + 1)}});
+            res.status(200).json({
+                eventData: data,
+                size: data.length  
+            })
+          }
+        } else{
+          const events = await EventModel.find();
+          res.status(200).json({
+              eventData : events,
+              size : events.length
+          }); 
+        }
+        
     } catch(error ){
         //res.status(500).send("Error occurred");
         next({
@@ -44,6 +64,68 @@ router.get("/events",async function (req:Request , res : Response , next : NextF
     }
     
 });
+
+router.get("/events/:year", async function(req: Request, res: Response, next: NextFunction){
+  try{
+    const year  = +(req.params.year.trim());   
+    if(Number.isNaN(year) || year < 1 ){
+      console.log(`Please use the correct route, /api/event/${req.params.year} can not be accessed `);
+      next({
+        ErrorCode: 400,
+        ErrorDetail: `Please use the correct route, /api/event/${req.params.year} can not be accessed `,
+        ErrorMessage: "Please use the correct route",
+        ErrorType: "Route Error"
+      })
+    }else{
+      const minYear = (year - 1) <= 1 ? 1 : year - 1;
+      const data = await EventModel.find({"startDateTime.year": {$gte: minYear, $lte: year + 1}});
+      res.status(200).json({
+        eventData: data,
+        size: data.length
+      })
+    }
+    
+  } catch(error){
+      console.log("Fetching events failed... ", error);
+      next({
+        ErrorCode: 500,
+        ErrorDetail : error,
+        ErrorMessage : "Can't get events for the requested year, Please Try Again ",
+        ErrorType : "DataBase Error"
+      })
+  }
+})
+
+router.get("/events/year", function(req:Request, res: Response, next: NextFunction){
+  const {year} = req.body;
+  // validate the year
+  if(typeof year !== 'number' || year < 1){
+    next({
+      ErrorCode: 400,
+      ErrorDetail: `Please send the correct input`,
+      ErrorMessage: "Please use the correct input",
+      ErrorType: "Input Error"
+    })
+    console.log("Input error: ", req.body);
+  }else {
+    const minYear = (year - 1) <= 1 ? 1 : (year - 1);
+    EventModel.find({"startDateTime.year": {$gte: minYear, $lte: year + 1}})
+              .then((data) => {
+                res.status(200).json({
+                  eventData: data,
+                  size: data.length
+                })
+              }).catch((error) => {
+                  console.log("Fetching events failed... ", error);
+                  next({
+                    ErrorCode: 500,
+                    ErrorDetail : error,
+                    ErrorMessage : "Can't get events for the requested year, Please try again ",
+                    ErrorType : "DataBase Error"
+                  })
+              })
+  }
+})
 
 router.post("/event", function (req: Request , res : Response , next : NextFunction ) {
    
