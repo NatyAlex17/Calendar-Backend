@@ -3,6 +3,7 @@ import EventModel  from "../models/eventModel";
 import { addRecurringEvents, createEvent, editEvent } from "../helpers/EventFunctions";
 import { AddEventSchema, DeleteEventSchema, EditEventSchema } from "../validators/addEvent";
 import { Err, validationErrorHandler } from "../errors/error";
+import Joi from "joi";
 
 const router = express.Router();
 
@@ -24,7 +25,7 @@ router.post( "/eventtime", async function (req:Request , res : Response , next :
 
 });
 
-router.get("/events",async function (req:Request , res : Response , next : NextFunction ) {
+/* router.get("/events",async function (req:Request , res : Response , next : NextFunction ) {
     try{
         if(req.body.year){
           const year = +(req.body.year);
@@ -61,6 +62,39 @@ router.get("/events",async function (req:Request , res : Response , next : NextF
           ErrorType : "DataBase Error"
         });
         console.log("Error occurred: ", error);
+    }
+    
+}); */
+router.get("/events",async function (req:Request , res : Response , next : NextFunction ) {
+    try{
+        if(Object.keys(req.body).length !== 0){
+          const {error, value} = Joi.object({year: Joi.number().integer().min(1)}).validate(req.body);
+          if(error){
+            next(validationErrorHandler(error));
+          }else{
+            const minYear = (value.year - 1) <= 1 ? 1 : value.year - 1;
+            const events = await EventModel.find({"startDateTime.year": {$gte: minYear, $lte: value.year + 1}});
+            res.status(200).json({
+              eventData: events,
+              size: events.length
+            })
+          }
+        }else {
+          const events = await EventModel.find();
+          res.status(200).json({
+              eventData : events,
+              size : events.length
+          });
+        }
+        
+    } catch(err ){
+        next({
+          ErrorCode: 500,
+          ErrorDetail : err,
+          ErrorMessage : " Can't Get Saved Events From Server , Please Try Again ",
+          ErrorType : "DataBase Error"
+        });
+        console.log("Error occurred: ", err);
     }
     
 });
