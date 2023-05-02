@@ -89,7 +89,7 @@ export function createEvent(event: Event, id?: string, recurringId?: number){
     //let eventId : string = id ? id : randomUUID();
     let eventId = id ? id : uuidV4();
     if(event.recurringOn !==0){
-      for(let i = 0, j = 1; i <= 40; ){  
+      for(let i = 0, j = 1; i <= 550; ){  
         eventStart = new Date(startDateTime.getTime());
         eventStart.setDate(eventStart.getDate() + i);
         eventEnd = new Date(eventStart.getTime() + duration);
