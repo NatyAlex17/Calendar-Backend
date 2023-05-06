@@ -17,7 +17,7 @@ const corsOption = {
 };
 app.use(cors(corsOption));
 
-const dbUri = process.env.MONGODB_URI || '';
+const dbUri = process.env?.MONGODB_URI || 'mongodb://localhost:27017/Event';
 
 if(!dbUri){
     throw new Error("Please define the MONGODB_URI environment variable inside .env");
@@ -59,7 +59,7 @@ mongoose.connect(dbUri)
                       }).catch( (err) => {
                             console.log("Error: ", err);
                       });
-
+            
             app.use("/api", eventRouter);
             app.use((error: any , req: Request, res: Response, next: Function) => {
                 console.log("error");
@@ -76,6 +76,7 @@ mongoose.connect(dbUri)
             
 
       }).catch((err) => {
+        console.log(err);
             console.log("an Error ");
       })
 
